@@ -1,0 +1,12 @@
+subprojects {
+    project.configurations.configureEach {
+        resolutionStrategy {
+            eachDependency { DependencyResolveDetails details ->
+                if (details.requested.group == 'org.bouncycastle' && details.requested.name == 'bcprov-jdk18on') {
+                    details.useTarget 'org.bouncycastle:bcprov-jdk15on:1.70'
+                    details.because 'Evitar error de firmas en entorno de compilacion'
+                }
+            }
+        }
+    }
+}
