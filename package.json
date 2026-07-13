@@ -1,0 +1,11 @@
+{
+  "name": "silence-cutter",
+  "version": "1.0.0",
+  "description": "Aplicacion movil para eliminar silencios de videos",
+  "main": "index.html",
+  "keywords": [],
+  "author": "Frank",
+  "license": "ISC",
+  "dependencies": {},
+  "devDependencies": {}
+}

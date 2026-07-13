@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Silence Cutter</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 15px;
+      background-color: #0f1319;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .title {
+      font-size: 24px;
+      font-weight: bold;
+      margin: 0;
+    }
+    .subtitle {
+      color: #8a9099;
+      font-size: 13px;
+      margin-top: 5px;
+    }
+    .subtitle span {
+      color: #00e676;
+    }
+    .panel {
+      background-color: #171d26;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+    .panel-title {
+      font-size: 11px;
+      color: #8a9099;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .control-group {
+      margin-bottom: 15px;
+    }
+    .control-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+    .control-value {
+      color: #00e676;
+      font-weight: bold;
+    }
+    input[type="range"] {
+      width: 100%;
+      background: #252e3b;
+      height: 6px;
+      border-radius: 3px;
+      outline: none;
+      -webkit-appearance: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #00e676;
+    }
+    .video-container {
+      width: 100%;
+      background-color: #000000;
+      border-radius: 12px;
+      overflow: hidden;
+      display: none;
+      margin-bottom: 15px;
+      aspect-ratio: 16/9;
+    }
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .no-video-box {
+      border: 2px dashed #252e3b;
+      border-radius: 12px;
+      padding: 30px;
+      text-align: center;
+      color: #8a9099;
+      font-size: 14px;
+      margin-bottom: 15px;
+    }
+    .btn {
+      background-color: #00e676;
+      color: #0f1319;
+      border: none;
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: 10px;
+      box-sizing: border-box;
+      display: block;
+      text-align: center;
+    }
+    .btn-secondary {
+      background-color: #2196f3;
+      color: #ffffff;
+      display: none;
+    }
+    .btn-accent {
+      background-color: #ffffff;
+      color: #0f1319;
+      display: none;
+    }
+    .progress-container {
+      display: none;
+      background-color: #252e3b;
+      border-radius: 6px;
+      height: 20px;
+      overflow: hidden;
+      position: relative;
+      margin-top: 10px;
+    }
+    .progress-bar {
+      background-color: #00e676;
+      height: 100%;
+      width: 0%;
+      transition: width 0.1s ease;
+    }
+    .progress-text {
+      position: absolute;
+      width: 100%;
+      text-align: center;
+      top: 2px;
+      font-size: 12px;
+      font-weight: bold;
+      color: #ffffff;
+      mix-blend-mode: difference;
+    }
+    #status-log {
+      text-align: center;
+      color: #8a9099;
+      font-size: 13px;
+      margin-top: 8px;
+    }
+    #file-input {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="title">Silence Cutter</div>
+    <div class="subtitle">Cortes limpios. <span>Videos perfectos.</span></div>
+  </div>
+
+  <div class="video-container" id="preview-container">
+    <video id="video-player" controls playsinline></video>
+  </div>
+  <div class="no-video-box" id="no-video-text">Ningún video seleccionado</div>
+
+  <div class="panel">
+    <div class="panel-title">Configuración de detección</div>
+    
+    <div class="control-group">
+      <div class="control-label">
+        <span>Umbral de sensibilidad</span>
+        <span class="control-value" id="threshold-val">-16 dB</span>
+      </div>
+      <input type="range" id="threshold" min="-60" max="0" value="-16">
+    </div>
+
+    <div class="control-group">
+      <div class="control-label">
+        <span>Duración mínima de silencio</span>
+        <span class="control-value" id="duration-val">50 ms</span>
+      </div>
+      <input type="range" id="duration" min="50" max="2000" step="50" value="50">
+    </div>
+
+    <div class="control-group">
+      <div class="control-label">
+        <span>Margen de seguridad (Padding)</span>
+        <span class="control-value" id="padding-val">0 ms</span>
+      </div>
+      <input type="range" id="padding" min="0" max="500" step="10" value="0">
+    </div>
+  </div>
+
+  <input type="file" id="file-input" accept="video/*">
+  <button class="btn" id="btn-pick">Seleccionar Video</button>
+  <button class="btn btn-secondary" id="btn-process">1. Analizar Ondas de Audio</button>
+  <button class="btn btn-accent" id="btn-export">2. Aplicar Eliminación de Silencios</button>
+
+  <div class="progress-container" id="progress-container">
+    <div class="progress-bar" id="progress-bar"></div>
+    <div class="progress-text" id="progress-text">0%</div>
+  </div>
+  <div id="status-log">Esperando archivo...</div>
+
+  <script src="app.js"></script>
+</body>
+</html>
