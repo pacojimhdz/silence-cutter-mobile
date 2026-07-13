@@ -28,10 +28,6 @@ jobs:
     - name: Configurar Android SDK
       uses: android-actions/setup-android@v3
 
-    - name: Crear archivo package.json base
-      run: |
-        echo '{"name": "silence-cutter", "version": "1.0.0", "dependencies": {}, "devDependencies": {}}' > package.json
-
     - name: Instalar dependencias de Capacitor
       run: |
         npm install @capacitor/core @capacitor/cli @capacitor/android
@@ -44,14 +40,13 @@ jobs:
       run: |
         npx cap add android
 
-    - name: Parchar libreria criptografica conflictiva
-      run: |
-        # Reemplazamos la version 1.79 de bcprov que falla por la version 1.70 estable en el build.gradle de Capacitor
-        sed -i 's/bcprov-jdk18on:1.79/bcprov-jdk15on:1.70/g' node_modules/@capacitor/android/capacitor/build.gradle || true
-
     - name: Sincronizar codigo web con el entorno Android
       run: |
         npx cap sync android
+
+    - name: Inyectar estrategia de resolucion en proyecto nativo
+      run: |
+        cat build.gradle >> android/build.gradle
 
     - name: Compilar APK en modo Debug con Gradle
       run: |
