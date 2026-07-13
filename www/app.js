@@ -7,12 +7,9 @@ document.addEventListener("DOMContentLoaded", () => {
     limpiarPantallaOndas();
 });
 
-// FUNCIÓN NATIVA EXCLUSIVA PARA CARGAR VIDEOS DESDE GALERÍA DE ANDROID 8+
 async function abrirGaleriaAndroid() {
     try {
-        // Validación de la existencia de las librerías nativas de Capacitor en el teléfono
-        if (!window.Capacitor || !window.Capacitor.Plugins || !window.Capacitor.Plugins.Camera) {
-            // Alternativa segura de entrada de archivos si la sincronización nativa se encuentra ausente
+        if (!window.Capacitor || !window.Capacitor.Plugins || !window.Capacitor.Plugins.FilePicker) {
             const inputTemporal = document.createElement('input');
             inputTemporal.type = 'file';
             inputTemporal.accept = 'video/mp4';
@@ -27,15 +24,12 @@ async function abrirGaleriaAndroid() {
             return;
         }
 
-        // Llamada nativa a la API del sistema de almacenamiento de Android
-        const { Camera } = window.Capacitor.Plugins;
-        const videoObtenido = await Camera.pickVideo({
-            source: 1 // Abre directamente la Galería Multimedia nativa de Android
-        });
+        const { FilePicker } = window.Capacitor.Plugins;
+        const resultado = await FilePicker.pickVideos({ readData: false });
 
-        if (videoObtenido && videoObtenido.path) {
-            // Conversión segura de la ruta física a una URL interna tolerada por el WebView
-            const urlSeguraAndroid = window.Capacitor.convertFileSrc(videoObtenido.path);
+        if (resultado && resultado.files && resultado.files.length > 0) {
+            const rutaArchivo = resultado.files[0].path;
+            const urlSeguraAndroid = window.Capacitor.convertFileSrc(rutaArchivo);
             videoNativo.src = urlSeguraAndroid;
             videoNativo.load();
         }
@@ -43,7 +37,6 @@ async function abrirGaleriaAndroid() {
         alert("Error al abrir la galería de Android: " + error.message);
     }
 
-    // Reiniciar los estados de la interfaz de usuario
     registrosSilencios = [];
     fragmentosEditados = [];
     document.getElementById('contador-silencios').innerText = "0 silencios";
@@ -52,7 +45,6 @@ async function abrirGaleriaAndroid() {
     limpiarPantallaOndas();
 }
 
-// ALGORITMO DE DETECCIÓN Y AUTO-SELECCIÓN AUTOMÁTICA
 function comenzarAnalisisAudio() {
     if (!videoNativo.src || videoNativo.src === "") {
         alert("Por favor, selecciona primero un video de tu galería.");
@@ -61,7 +53,6 @@ function comenzarAnalisisAudio() {
 
     const duracionVideo = videoNativo.duration || 15;
 
-    // Marcamos los silencios activos por defecto (remover: true) estilo Jumpcutter
     registrosSilencios = [
         { id: 1, inicio: duracionVideo * 0.10, fin: (duracionVideo * 0.10) + 1.8, remover: true },
         { id: 2, inicio: duracionVideo * 0.45, fin: (duracionVideo * 0.45) + 2.2, remover: true },
@@ -72,7 +63,6 @@ function comenzarAnalisisAudio() {
     dibujarListaInteractiva();
 }
 
-// RENDERIZAR ONDAS VERDE FOSFORESCENTE (MÓVIL)
 function actualizarOndasVisuales() {
     const canvas = document.getElementById('canvas-visualizador');
     const ctx = canvas.getContext('2d');
@@ -80,7 +70,7 @@ function actualizarOndasVisuales() {
     canvas.height = 90;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.strokeStyle = "#00e676"; 
+    ctx.strokeStyle = "#00e676";
     ctx.lineWidth = 2.5;
 
     for (let i = 0; i < canvas.width; i += 6) {
@@ -115,7 +105,6 @@ function limpiarPantallaOndas() {
     ctx.stroke();
 }
 
-// LISTA DE ELEMENTOS CON SWITCHES INTERACTIVOS
 function dibujarListaInteractiva() {
     const cajaContenedora = document.getElementById('lista-items-contenedor');
     cajaContenedora.innerHTML = '';
@@ -178,7 +167,6 @@ function convertirSegundos(seg) {
     return `${m}:${s}`;
 }
 
-// PROCESADOR MULTIMEDIA NATIVO
 async function ejecutarRecorteYExportacion() {
     if (registrosSilencios.length === 0) {
         alert("No hay análisis listo para procesar el recorte.");
