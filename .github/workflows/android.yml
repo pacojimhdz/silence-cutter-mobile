@@ -23,30 +23,29 @@ jobs:
     - name: Configurar Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: 18
+        node-version: 20
 
     - name: Configurar Android SDK
       uses: android-actions/setup-android@v3
 
-    - name: Instalar dependencias de Capacitor
-      run: |
-        npm install @capacitor/core @capacitor/cli @capacitor/android
+    - name: Instalar dependencias del proyecto
+      run: npm install
 
     - name: Inicializar configuracion de Capacitor
-      run: |
-        npx cap init "Silence Cutter" "com.bigfrank.silencecutter" --web-dir=www
+      run: npx cap init "Silence Cutter" "com.bigfrank.silencecutter" --web-dir=www
 
     - name: Agregar plataforma Android nativa
-      run: |
-        npx cap add android
+      run: npx cap add android
 
     - name: Sincronizar codigo web con el entorno Android
-      run: |
-        npx cap sync android
+      run: npx cap sync android
 
-    - name: Inyectar estrategia de resolucion en proyecto nativo
+    - name: Inyectar permisos de lectura de almacenamiento
       run: |
-        cat build.gradle >> android/build.gradle
+        MANIFEST="android/app/src/main/AndroidManifest.xml"
+        # Insertar los permisos de almacenamiento antes de la etiqueta <application>
+        sed -i '/<application/i \    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" \/>' $MANIFEST
+        sed -i '/<application/i \    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" \/>' $MANIFEST
 
     - name: Compilar APK en modo Debug con Gradle
       run: |
