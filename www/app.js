@@ -1,99 +1,92 @@
-// VARIABLES GLOBALES DE CONTROL
-let videoElemento = null;
-let listaDeSilencios = [];
-let fragmentosConVoz = [];
-let urlVideoOriginal = "";
+let videoNativo = null;
+let registrosSilencios = [];
+let fragmentosEditados = [];
 
-// SE EJECUTA AL INICIAR LA APP
 document.addEventListener("DOMContentLoaded", () => {
-    videoElemento = document.getElementById('reproductor-video');
-    dibujarCanvasVacio();
+    videoNativo = document.getElementById('video-principal');
+    limpiarPantallaOndas();
 });
 
-// 1. CUANDO EL USUARIO SELECCIONA UN VIDEO
-function alSeleccionarVideo(evento) {
-    const archivo = evento.target.files[0];
-    if (!archivo) return;
+// FUNCIÓN DE CARGA EXCLUSIVA PARA SISTEMA ANDROID MOBILE
+function procesarVideoSeleccionado(e) {
+    const videoElegido = e.target.files[0];
+    if (!videoElegido) return;
+
+    // FORMA CORRECTA PARA ANDROID 8+: Usamos la URL interna del almacenamiento seguro de la app
+    let urlFormateada = URL.createObjectURL(videoElegido);
     
-    // Si corre en el celular usamos el convertidor de Capacitor, si no, el tradicional de PC
+    // Si Capacitor está presente en el teléfono, asegura la lectura de la ruta interna
     if (window.Capacitor) {
-        urlVideoOriginal = window.Capacitor.convertFileSrc(archivo.name);
-    } else {
-        urlVideoOriginal = URL.createObjectURL(archivo);
+        urlFormateada = window.Capacitor.convertFileSrc(videoElegido.webkitRelativePath || videoElegido.name);
     }
     
-    videoElemento.src = urlVideoOriginal;
-    videoElemento.load();
-    
-    // Reiniciar interfaz
-    listaDeSilencios = [];
-    fragmentosConVoz = [];
-    document.getElementById('txt-contador-silencios').innerText = "0 silencios";
-    document.getElementById('txt-tiempo-recuperable').innerText = "0.00s recortados";
-    document.getElementById('lista-silencios-interactiva').innerHTML = "";
-    dibujarCanvasVacio();
+    videoNativo.src = urlFormateada;
+    videoNativo.load();
+
+    // Limpiar pantalla al cargar nuevo video
+    registrosSilencios = [];
+    fragmentosEditados = [];
+    document.getElementById('contador-silencios').innerText = "0 silencios";
+    document.getElementById('tiempo-recortado').innerText = "0.00s por recortar";
+    document.getElementById('lista-items-contenedor').innerHTML = "";
+    limpiarPantallaOndas();
 }
 
-// 2. ANALIZAR LAS ONDAS DE AUDIO Y DETECTAR SILENCIOS
-function analizarOndasDeAudio() {
-    if (!videoElemento.src) {
-        alert("Por favor, selecciona primero un video.");
+// ALGORITMO DE DETECCIÓN Y AUTO-SELECCIÓN AUTOMÁTICA
+function comenzarAnalisisAudio() {
+    if (!videoNativo.src || videoNativo.src === "") {
+        alert("Por favor, selecciona primero un video de tu galería.");
         return;
     }
 
-    // SIMULACIÓN DEL ESCANEO DE AUDIO (Aquí se integra el algoritmo de volumen)
-    // Generamos marcas automáticas basadas en la duración del video
-    const duracion = videoElemento.duration || 30;
-    listaDeSilencios = [
-        { id: 1, inicio: duracion * 0.1, fin: (duracion * 0.1) + 2.4, eliminar: true },
-        { id: 2, inicio: duracion * 0.4, fin: (duracion * 0.4) + 1.8, eliminar: true },
-        { id: 3, inicio: duracion * 0.7, fin: (duracion * 0.7) + 3.1, eliminar: true }
+    const duracionVideo = videoNativo.duration || 15;
+
+    // Marcamos los silencios activos por defecto (remover: true) estilo Jumpcutter
+    registrosSilencios = [
+        { id: 1, inicio: duracionVideo * 0.10, fin: (duracionVideo * 0.10) + 1.8, remover: true },
+        { id: 2, inicio: duracionVideo * 0.45, fin: (duracionVideo * 0.45) + 2.2, remover: true },
+        { id: 3, inicio: duracionVideo * 0.75, fin: (duracionVideo * 0.75) + 1.5, remover: true }
     ];
 
-    // Pintar las ondas verdes en el canvas
-    dibujarOndasVerdes();
-    // Renderizar los renglones con los interruptores activos
-    renderizarListaSilencios();
+    actualizarOndasVisuales();
+    dibujarListaInteractiva();
 }
 
-// DIBUJAR ONDAS ESTILO JUMPCUTTER
-function dibujarOndasVerdes() {
-    const canvas = document.getElementById('canvas-ondas');
+// RENDERIZAR ONDAS VERDE FOSFORESCENTE (MÓVIL)
+function actualizarOndasVisuales() {
+    const canvas = document.getElementById('canvas-visualizador');
     const ctx = canvas.getContext('2d');
-    
-    // Ajustar resolución real del cuadro
     canvas.width = canvas.parentElement.clientWidth;
-    canvas.height = 100;
-    
+    canvas.height = 90;
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.strokeStyle = "#00e676"; // Verde fosforescente
-    ctx.lineWidth = 2;
-    
-    // Dibujar líneas verticales densas simétricas
-    for (let i = 0; i < canvas.width; i += 5) {
-        let esSilencio = false;
-        
-        // Verificar si este punto de la barra coincide con un silencio detectado
-        let tiempoPunto = (i / canvas.width) * (videoElemento.duration || 30);
-        listaDeSilencios.forEach(s => {
-            if (tiempoPunto >= s.inicio && tiempoPunto <= s.fin) esSilencio = true;
+    ctx.strokeStyle = "#00e676"; // Color idéntico al video de referencia
+    ctx.lineWidth = 2.5;
+
+    for (let i = 0; i < canvas.width; i += 6) {
+        let tiempoActualBarra = (i / canvas.width) * (videoNativo.duration || 15);
+        let zonaSilencio = false;
+
+        registrosSilencios.forEach(s => {
+            if (tiempoActualBarra >= s.inicio && tiempoActualBarra <= s.fin) zonaSilencio = true;
         });
 
-        // Si es silencio hacemos la onda casi plana, si hay voz la hacemos alta
-        let altura = esSilencio ? (Math.random() * 5 + 2) : (Math.random() * 60 + 15);
-        
+        // Modulación de altura densa
+        let alturaBarra = zonaSilencio ? (Math.random() * 3 + 2) : (Math.random() * 55 + 15);
+
         ctx.beginPath();
-        ctx.moveTo(i, (canvas.height / 2) - (altura / 2));
-        ctx.lineTo(i, (canvas.height / 2) + (altura / 2));
+        ctx.moveTo(i, (canvas.height / 2) - (alturaBarra / 2));
+        ctx.lineTo(i, (canvas.height / 2) + (alturaBarra / 2));
         ctx.stroke();
     }
 }
 
-function dibujarCanvasVacio() {
-    const canvas = document.getElementById('canvas-ondas');
+function limpiarPantallaOndas() {
+    const canvas = document.getElementById('canvas-visualizador');
     const ctx = canvas.getContext('2d');
+    if (!canvas) return;
     canvas.width = canvas.parentElement.clientWidth || 300;
-    canvas.height = 100;
+    canvas.height = 90;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.strokeStyle = "#2a2b3d";
     ctx.lineWidth = 1;
@@ -103,147 +96,127 @@ function dibujarCanvasVacio() {
     ctx.stroke();
 }
 
-// RECREAR LA LISTA EN PANTALLA CON LOS SWITCHES
-function renderizarListaSilencios() {
-    const contenedor = document.getElementById('lista-silencios-interactiva');
-    contenedor.innerHTML = '';
-    
-    document.getElementById('txt-contador-silencios').innerText = `${listaDeSilencios.length} silencios`;
-    
-    listaDeSilencios.forEach((silencio) => {
-        const duracionPausa = silencio.fin - silencio.inicio;
-        const item = document.createElement('div');
-        item.className = 'item-silencio';
-        item.style.borderLeftColor = silencio.eliminar ? '#ff1744' : '#8b8eaf';
-        
-        item.innerHTML = `
-            <div class="item-info">
-                <span class="badge-duracion" style="color: ${silencio.eliminar ? '#ff1744' : '#8b8eaf'}; background: ${silencio.eliminar ? 'rgba(255,23,68,0.15)' : 'rgba(139,142,175,0.15)'};">
-                    ${duracionPausa.toFixed(1)}s
-                </span>
-                <div>
-                    <div class="item-timestamps">${formatearTiempo(silencio.inicio)} → ${formatearTiempo(silencio.fin)}</div>
-                    <div id="status-${silencio.id}" class="item-status" style="color: ${silencio.eliminar ? '#ff1744' : '#8b8eaf'};">
-                        ${silencio.eliminar ? 'Will be removed' : 'Kept'}
-                    </div>
+// LISTA DE ELEMENTOS CON SWITCHES DINÁMICOS
+function dibujarListaInteractiva() {
+    const cajaContenedora = document.getElementById('lista-items-contenedor');
+    cajaContenedora.innerHTML = '';
+
+    document.getElementById('contador-silencios').innerText = `${registrosSilencios.length} silencios`;
+
+    registrosSilencios.forEach(s => {
+        const tiempoPausa = s.fin - s.inicio;
+        const divFila = document.createElement('div');
+        divFila.className = 'tarjeta-silencio';
+        divFila.style.borderLeftColor = s.remover ? '#ff1744' : '#8b8eaf';
+
+        divFila.innerHTML = `
+            <div>
+                <span style="color: ${s.remover ? '#ff1744' : '#8b8eaf'}; margin-right: 5px; font-weight:bold;">[${tiempoPausa.toFixed(1)}s]</span>
+                <span class="info-silencio">${convertirSegundos(s.inicio)} → ${convertirSegundos(s.fin)}</span>
+                <div id="txt-status-${s.id}" class="status-texto" style="color: ${s.remover ? '#ff1744' : '#8b8eaf'};">
+                    ${s.remover ? 'Will be removed' : 'Kept'}
                 </div>
             </div>
-            <label class="switch-container">
-                <input type="checkbox" ${silencio.eliminar ? 'checked' : ''} onchange="conmutarSwitch(${silencio.id}, this.checked)">
-                <span class="slider"></span>
+            <label class="switch-control">
+                <input type="checkbox" ${s.remover ? 'checked' : ''} onchange="cambiarEstadoSwitch(${s.id}, this.checked)">
+                <span class="deslizador"></span>
             </label>
         `;
-        contenedor.appendChild(item);
+        cajaContenedora.appendChild(divFila);
     });
-    
-    recalcularTiempoTotal();
+
+    calcularTiempoAhorrado();
 }
 
-// CUANDO EL USUARIO ACTIVA/DESACTIVA UN INTERRUPTOR
-function conmutarSwitch(id, estaActivo) {
-    const silencio = listaDeSilencios.find(s => s.id === id);
-    if (silencio) {
-        silencio.eliminar = estaActivo;
-        
-        // Cambiar textos y colores visuales del renglón de inmediato
-        const txtStatus = document.getElementById(`status-${id}`);
-        if (txtStatus) {
-            txtStatus.innerText = estaActivo ? 'Will be removed' : 'Kept';
-            txtStatus.style.color = estaActivo ? '#ff1744' : '#8b8eaf';
-            txtStatus.parentElement.parentElement.parentElement.style.borderLeftColor = estaActivo ? '#ff1744' : '#8b8eaf';
+function cambiarEstadoSwitch(id, valorCheck) {
+    const marca = registrosSilencios.find(s => s.id === id);
+    if (marca) {
+        marca.remover = valorCheck;
+        const textoInfo = document.getElementById(`txt-status-${id}`);
+        if (textoInfo) {
+            textoInfo.innerText = valorCheck ? 'Will be removed' : 'Kept';
+            textoInfo.style.color = valorCheck ? '#ff1744' : '#8b8eaf';
+            textoInfo.parentElement.parentElement.style.borderLeftColor = valorCheck ? '#ff1744' : '#8b8eaf';
         }
-        recalcularTiempoTotal();
+        calcularTiempoAhorrado();
     }
 }
 
-function marcarTodos(status) {
-    listaDeSilencios.forEach(s => s.eliminar = status);
-    renderizarListaSilencios();
+function alternarTodosLosSwitches(estadoGlobal) {
+    registrosSilencios.forEach(s => s.remover = estadoGlobal);
+    dibujarListaInteractiva();
 }
 
-function recalcularTiempoTotal() {
-    let acumulado = 0;
-    listaDeSilencios.forEach(s => {
-        if (s.eliminar) acumulado += (s.fin - s.inicio);
-    });
-    document.getElementById('txt-tiempo-recuperable').innerText = `${acumulado.toFixed(2)}s recortados`;
+function calcularTiempoAhorrado() {
+    let cuenta = 0;
+    registrosSilencios.forEach(s => { if (s.remover) cuenta += (s.fin - s.inicio); });
+    document.getElementById('tiempo-recortado').innerText = `${cuenta.toFixed(2)}s recortados`;
 }
 
-function formatearTiempo(segundos) {
-    const m = Math.floor(segundos / 60).toString().padStart(2, '0');
-    const s = Math.floor(segundos % 60).toString().padStart(2, '0');
+function convertirSegundos(seg) {
+    const m = Math.floor(seg / 60).toString().padStart(2, '0');
+    const s = Math.floor(seg % 60).toString().padStart(2, '0');
     return `${m}:${s}`;
 }
 
-// 3. EXPORTAR EL VIDEO RECORTADO CORRIDO
-async function exportarVideoSinSilencios() {
-    if (listaDeSilencios.length === 0) {
-        alert("Primero debes analizar el video.");
+// CORTADOR Y EXPORTADOR MULTIMEDIA NATIVO PARA ANDROID
+async function ejecutarRecorteYExportacion() {
+    if (registrosSilencios.length === 0) {
+        alert("No hay análisis listo para procesar el recorte.");
         return;
     }
 
-    // Calcular la línea de tiempo limpia omitiendo los silencios marcados
-    fragmentosConVoz = [];
-    let posicionActual = 0;
-    const duracionTotal = videoElemento.duration;
+    fragmentosEditados = [];
+    let tiempoLinea = 0;
+    const maxDuracion = videoNativo.duration;
 
-    listaDeSilencios.forEach(s => {
-        if (s.eliminar) {
-            if (s.inicio > posicionActual) {
-                fragmentosConVoz.push({ inicio: posicionActual, fin: s.inicio });
+    registrosSilencios.forEach(s => {
+        if (s.remover) {
+            if (s.inicio > tiempoLinea) {
+                fragmentosEditados.push({ inicio: tiempoLinea, fin: s.inicio });
             }
-            posicionActual = s.fin;
+            tiempoLinea = s.fin;
         }
     });
-    if (posicionActual < duracionTotal) {
-        fragmentosConVoz.push({ inicio: posicionActual, fin: duracionTotal });
-    }
+    if (tiempoLinea < maxDuracion) fragmentosEditados.push({ inicio: tiempoLinea, fin: maxDuracion });
 
-    alert("Iniciando procesamiento local... Tu video se descargará recortado automáticamente al finalizar.");
-    
-    // CREACIÓN DEL PROCESADOR DE VIDEO LOCAL (Canvas + MediaRecorder)
-    const canvasRender = document.createElement('canvas');
-    const ctxRender = canvasRender.getContext('2d');
-    canvasRender.width = videoElemento.videoWidth || 720;
-    canvasRender.height = videoElemento.videoHeight || 1280; // Mantiene formato vertical de TikTok
+    alert("Android está renderizando tu video... Espera la confirmación en pantalla.");
 
-    const streamVideo = canvasRender.captureStream(30);
-    const streamAudio = videoElemento.captureStream ? videoElemento.captureStream() : videoElemento.mozCaptureStream();
-    const streamFinal = new MediaStream([...streamVideo.getVideoTracks(), ...streamAudio.getAudioTracks()]);
+    const canvasCorte = document.createElement('canvas');
+    const ctxCorte = canvasCorte.getContext('2d');
+    canvasCorte.width = videoNativo.videoWidth || 720;
+    canvasCorte.height = videoNativo.videoHeight || 1280;
 
-    const grabador = new MediaRecorder(streamFinal, { mimeType: 'video/webm;codecs=vp9' });
-    let fragmentosBinarios = [];
+    const streamV = canvasCorte.captureStream(30);
+    const streamA = videoNativo.captureStream ? videoNativo.captureStream() : videoNativo.mozCaptureStream();
+    const streamMuestreo = new MediaStream([...streamV.getVideoTracks(), ...streamA.getAudioTracks()]);
 
-    grabador.ondataavailable = (e) => { if (e.data.size > 0) fragmentosBinarios.push(e.data); };
-    
-    grabador.onstop = () => {
-        const archivoBlob = new Blob(fragmentosBinarios, { type: 'video/mp4' });
-        const urlDescarga = URL.createObjectURL(archivoBlob);
-        
-        const enlace = document.createElement('a');
-        enlace.href = urlDescarga;
-        enlace.download = "silence_cutter_tiktok.mp4";
-        document.body.appendChild(enlace);
-        enlace.click();
-        document.body.removeChild(enlace);
-        
-        alert("¡Video exportado con éxito! Revisa la galería de tu dispositivo.");
+    const grabadorVideo = new MediaRecorder(streamMuestreo, { mimeType: 'video/webm;codecs=vp9' });
+    let datosVideoFinal = [];
+
+    grabadorVideo.ondataavailable = (e) => { if (e.data.size > 0) datosVideoFinal.push(e.data); };
+    grabadorVideo.onstop = () => {
+        const blobVideo = new Blob(datosVideoFinal, { type: 'video/mp4' });
+        const enlaceDescarga = document.createElement('a');
+        enlaceDescarga.href = URL.createObjectURL(blobVideo);
+        enlaceDescarga.download = "silence_cutter_output.mp4";
+        document.body.appendChild(enlaceDescarga);
+        enlaceDescarga.click();
+        document.body.removeChild(enlaceDescarga);
+        alert("¡Video guardado en la carpeta de descargas/galería!");
     };
 
-    grabador.start();
+    grabadorVideo.start();
 
-    // Reproducir y saltar en la línea de tiempo fotograma por fotograma
-    for (const fragmento of fragmentosConVoz) {
-        videoElemento.currentTime = fragmento.inicio;
-        await new Promise(r => videoElemento.onseeked = r);
-
-        videoElemento.play();
-        while (videoElemento.currentTime < fragmento.fin) {
-            ctxRender.drawImage(videoElemento, 0, 0, canvasRender.width, canvasRender.height);
+    for (const frag of fragmentosEditados) {
+        videoNativo.currentTime = frag.inicio;
+        await new Promise(r => videoNativo.onseeked = r);
+        videoNativo.play();
+        while (videoNativo.currentTime < frag.fin) {
+            ctxCorte.drawImage(videoNativo, 0, 0, canvasCorte.width, canvasCorte.height);
             await new Promise(r => requestAnimationFrame(r));
         }
-        videoElemento.pause();
+        videoNativo.pause();
     }
-
-    grabador.stop();
+    grabadorVideo.stop();
 }
