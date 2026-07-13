@@ -1,6 +1,6 @@
 {
-  "appId": "io.ionic.starter",
-  "appName": "No Silence",
+  "appId": "com.bigfrank.silencecutter",
+  "appName": "Silence Cutter",
   "webDir": "www",
   "bundledWebRuntime": false
 }
