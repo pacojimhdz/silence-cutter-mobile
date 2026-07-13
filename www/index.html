@@ -1,212 +1,262 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Silence Cutter</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 15px;
-      background-color: #0f1319;
-      color: #ffffff;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .header {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    .title {
-      font-size: 24px;
-      font-weight: bold;
-      margin: 0;
-    }
-    .subtitle {
-      color: #8a9099;
-      font-size: 13px;
-      margin-top: 5px;
-    }
-    .subtitle span {
-      color: #00e676;
-    }
-    .panel {
-      background-color: #171d26;
-      border-radius: 12px;
-      padding: 15px;
-      margin-bottom: 15px;
-    }
-    .panel-title {
-      font-size: 11px;
-      color: #8a9099;
-      margin-bottom: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .control-group {
-      margin-bottom: 15px;
-    }
-    .control-label {
-      display: flex;
-      justify-content: space-between;
-      font-size: 13px;
-      margin-bottom: 6px;
-    }
-    .control-value {
-      color: #00e676;
-      font-weight: bold;
-    }
-    input[type="range"] {
-      width: 100%;
-      background: #252e3b;
-      height: 6px;
-      border-radius: 3px;
-      outline: none;
-      -webkit-appearance: none;
-    }
-    input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      background: #00e676;
-    }
-    .video-container {
-      width: 100%;
-      background-color: #000000;
-      border-radius: 12px;
-      overflow: hidden;
-      display: none;
-      margin-bottom: 15px;
-      aspect-ratio: 16/9;
-    }
-    video {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-    }
-    .no-video-box {
-      border: 2px dashed #252e3b;
-      border-radius: 12px;
-      padding: 30px;
-      text-align: center;
-      color: #8a9099;
-      font-size: 14px;
-      margin-bottom: 15px;
-    }
-    .btn {
-      background-color: #00e676;
-      color: #0f1319;
-      border: none;
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      font-size: 15px;
-      font-weight: bold;
-      cursor: pointer;
-      margin-bottom: 10px;
-      box-sizing: border-box;
-      display: block;
-      text-align: center;
-    }
-    .btn-secondary {
-      background-color: #2196f3;
-      color: #ffffff;
-      display: none;
-    }
-    .btn-accent {
-      background-color: #ffffff;
-      color: #0f1319;
-      display: none;
-    }
-    .progress-container {
-      display: none;
-      background-color: #252e3b;
-      border-radius: 6px;
-      height: 20px;
-      overflow: hidden;
-      position: relative;
-      margin-top: 10px;
-    }
-    .progress-bar {
-      background-color: #00e676;
-      height: 100%;
-      width: 0%;
-      transition: width 0.1s ease;
-    }
-    .progress-text {
-      position: absolute;
-      width: 100%;
-      text-align: center;
-      top: 2px;
-      font-size: 12px;
-      font-weight: bold;
-      color: #ffffff;
-      mix-blend-mode: difference;
-    }
-    #status-log {
-      text-align: center;
-      color: #8a9099;
-      font-size: 13px;
-      margin-top: 8px;
-    }
-    #file-input {
-      display: none;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Silence Cutter</title>
+    <style>
+        body {
+            background-color: #0f1015;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+        .app-title {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 10px;
+            margin-bottom: 5px;
+        }
+        .app-subtitle {
+            text-align: center;
+            color: #00e676;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .video-box {
+            width: 100%;
+            background: #000000;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        video {
+            width: 100%;
+            display: block;
+        }
+        .timeline-container {
+            background: #161822;
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #2a2b3d;
+        }
+        canvas {
+            width: 100%;
+            height: 100px;
+            background: #11121a;
+            border-radius: 6px;
+            display: block;
+        }
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .stats-title {
+            margin: 0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .stats-subtitle {
+            color: #00e676;
+            font-size: 13px;
+            display: block;
+            margin-top: 2px;
+        }
+        .btn-primary {
+            background: #00e676;
+            color: #000000;
+            border: none;
+            padding: 10px 20px;
+            font-weight: bold;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .panel-silencios {
+            background: #161822;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 80px;
+            border: 1px solid #2a2b3d;
+        }
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 13px;
+            color: #8b8eaf;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .link-action {
+            color: #00e676;
+            cursor: pointer;
+            margin-left: 12px;
+            font-weight: bold;
+        }
+        .lista-items {
+            max-height: 220px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .item-silencio {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #1e2030;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #ff1744;
+        }
+        .item-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .badge-duracion {
+            background: rgba(255, 23, 68, 0.15);
+            color: #ff1744;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .item-timestamps {
+            font-size: 14px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+        .item-status {
+            font-size: 11px;
+            color: #ff1744;
+            margin-top: 1px;
+        }
+        .switch-container {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+        .switch-container input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #3d405b;
+            transition: .2s;
+            border-radius: 24px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .2s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #00e676;
+        }
+        input:checked + .slider:before {
+            transform: translateX(20px);
+            background-color: #000000;
+        }
+        .btn-exportar {
+            position: fixed;
+            bottom: 15px;
+            left: 15px;
+            right: 15px;
+            background: #00e676;
+            color: #000000;
+            padding: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(0,230,118,0.3);
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .btn-seleccionar {
+            background: #2a2b3d;
+            color: white;
+            border: 1px dashed #8b8eaf;
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        input[type="file"] {
+            display: none;
+        }
+    </style>
 </head>
 <body>
 
-  <div class="header">
-    <div class="title">Silence Cutter</div>
-    <div class="subtitle">Cortes limpios. <span>Videos perfectos.</span></div>
-  </div>
+    <div class="app-title">Silence Cutter</div>
+    <div class="app-subtitle">Cortes limpios. Videos perfectos.</div>
 
-  <div class="video-container" id="preview-container">
-    <video id="video-player" controls playsinline></video>
-  </div>
-  <div class="no-video-box" id="no-video-text">Ningún video seleccionado</div>
+    <label class="btn-seleccionar">
+        📁 Seleccionar Video (.MP4)
+        <input type="file" id="input-archivo" accept="video/mp4" onchange="alSeleccionarVideo(event)">
+    </label>
 
-  <div class="panel">
-    <div class="panel-title">Configuración de detección</div>
-    
-    <div class="control-group">
-      <div class="control-label">
-        <span>Umbral de sensibilidad</span>
-        <span class="control-value" id="threshold-val">-16 dB</span>
-      </div>
-      <input type="range" id="threshold" min="-60" max="0" value="-16">
+    <div class="video-box">
+        <video id="reproductor-video" controls playsinline></video>
     </div>
 
-    <div class="control-group">
-      <div class="control-label">
-        <span>Duración mínima de silencio</span>
-        <span class="control-value" id="duration-val">50 ms</span>
-      </div>
-      <input type="range" id="duration" min="50" max="2000" step="50" value="50">
+    <div class="timeline-container">
+        <canvas id="canvas-ondas"></canvas>
     </div>
 
-    <div class="control-group">
-      <div class="control-label">
-        <span>Margen de seguridad (Padding)</span>
-        <span class="control-value" id="padding-val">0 ms</span>
-      </div>
-      <input type="range" id="padding" min="0" max="500" step="10" value="0">
+    <div class="stats-row">
+        <div>
+            <h2 id="txt-contador-silencios" class="stats-title">0 silencios</h2>
+            <span id="txt-tiempo-recuperable" class="stats-subtitle">0.00s recortados</span>
+        </div>
+        <button id="btn-detectar" onclick="analizarOndasDeAudio()" class="btn-primary">1. Analizar Ondas</button>
     </div>
-  </div>
 
-  <input type="file" id="file-input" accept="video/*">
-  <button class="btn" id="btn-pick">Seleccionar Video</button>
-  <button class="btn btn-secondary" id="btn-process">1. Analizar Ondas de Audio</button>
-  <button class="btn btn-accent" id="btn-export">2. Aplicar Eliminación de Silencios</button>
+    <div class="panel-silencios">
+        <div class="panel-header">
+            <span>Lista de Pausas</span>
+            <div>
+                <span class="link-action" onclick="marcarTodos(true)">All</span>
+                <span class="link-action" onclick="marcarTodos(false)">None</span>
+            </div>
+        </div>
+        
+        <div id="lista-silencios-interactiva" class="lista-items">
+            </div>
+    </div>
 
-  <div class="progress-container" id="progress-container">
-    <div class="progress-bar" id="progress-bar"></div>
-    <div class="progress-text" id="progress-text">0%</div>
-  </div>
-  <div id="status-log">Esperando archivo...</div>
+    <button onclick="exportarVideoSinSilencios()" class="btn-exportar">
+        📥 Exportar Video Final
+    </button>
 
-  <script src="app.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>
