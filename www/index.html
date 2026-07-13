@@ -190,24 +190,19 @@
     </style>
 </head>
 <body>
-
     <div class="header-app">
         <h1>No Silence</h1>
         <p>Android Mobile Edition</p>
     </div>
-
     <button class="selector-nativo" onclick="abrirGaleriaAndroid()">
         📁 SELECCIONAR VIDEO DE GALERÍA
     </button>
-
     <div class="caja-video">
         <video id="video-principal" controls playsinline></video>
     </div>
-
     <div class="seccion-ondas">
         <canvas id="canvas-visualizador"></canvas>
     </div>
-
     <div class="barra-estado">
         <div>
             <h2 id="contador-silencios" class="titulo-estado">0 silencios</h2>
@@ -215,7 +210,6 @@
         </div>
         <button onclick="comenzarAnalisisAudio()" class="btn-accion">1. Analizar</button>
     </div>
-
     <div class="lista-silencios">
         <div class="lista-header">
             <span>Zonas de Silencio</span>
@@ -226,11 +220,9 @@
         </div>
         <div id="lista-items-contenedor" class="contenedor-items"></div>
     </div>
-
     <button onclick="ejecutarRecorteYExportacion()" class="btn-flotante-exportar">
         📥 ELIMINAR SILENCIOS Y GUARDAR
     </button>
-
     <script src="capacitor.js"></script>
     <script src="js/app.js"></script>
 </body>
