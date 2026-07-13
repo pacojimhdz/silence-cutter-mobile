@@ -23,10 +23,8 @@ async function abrirGaleriaAndroid() {
             inputTemporal.click();
             return;
         }
-
         const { FilePicker } = window.Capacitor.Plugins;
         const resultado = await FilePicker.pickVideos({ readData: false });
-
         if (resultado && resultado.files && resultado.files.length > 0) {
             const rutaArchivo = resultado.files[0].path;
             const urlSeguraAndroid = window.Capacitor.convertFileSrc(rutaArchivo);
@@ -36,7 +34,6 @@ async function abrirGaleriaAndroid() {
     } catch (error) {
         alert("Error al abrir la galería de Android: " + error.message);
     }
-
     registrosSilencios = [];
     fragmentosEditados = [];
     document.getElementById('contador-silencios').innerText = "0 silencios";
@@ -50,15 +47,12 @@ function comenzarAnalisisAudio() {
         alert("Por favor, selecciona primero un video de tu galería.");
         return;
     }
-
     const duracionVideo = videoNativo.duration || 15;
-
     registrosSilencios = [
         { id: 1, inicio: duracionVideo * 0.10, fin: (duracionVideo * 0.10) + 1.8, remover: true },
         { id: 2, inicio: duracionVideo * 0.45, fin: (duracionVideo * 0.45) + 2.2, remover: true },
         { id: 3, inicio: duracionVideo * 0.75, fin: (duracionVideo * 0.75) + 1.5, remover: true }
     ];
-
     actualizarOndasVisuales();
     dibujarListaInteractiva();
 }
@@ -68,21 +62,16 @@ function actualizarOndasVisuales() {
     const ctx = canvas.getContext('2d');
     canvas.width = canvas.parentElement.clientWidth;
     canvas.height = 90;
-
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.strokeStyle = "#00e676";
     ctx.lineWidth = 2.5;
-
     for (let i = 0; i < canvas.width; i += 6) {
         let tiempoActualBarra = (i / canvas.width) * (videoNativo.duration || 15);
         let zonaSilencio = false;
-
         registrosSilencios.forEach(s => {
             if (tiempoActualBarra >= s.inicio && tiempoActualBarra <= s.fin) zonaSilencio = true;
         });
-
         let alturaBarra = zonaSilencio ? (Math.random() * 3 + 2) : (Math.random() * 55 + 15);
-
         ctx.beginPath();
         ctx.moveTo(i, (canvas.height / 2) - (alturaBarra / 2));
         ctx.lineTo(i, (canvas.height / 2) + (alturaBarra / 2));
@@ -108,15 +97,12 @@ function limpiarPantallaOndas() {
 function dibujarListaInteractiva() {
     const cajaContenedora = document.getElementById('lista-items-contenedor');
     cajaContenedora.innerHTML = '';
-
     document.getElementById('contador-silencios').innerText = `${registrosSilencios.length} silencios`;
-
     registrosSilencios.forEach(s => {
         const tiempoPausa = s.fin - s.inicio;
         const divFila = document.createElement('div');
         divFila.className = 'tarjeta-silencio';
         divFila.style.borderLeftColor = s.remover ? '#ff1744' : '#8b8eaf';
-
         divFila.innerHTML = `
             <div>
                 <span style="color: ${s.remover ? '#ff1744' : '#8b8eaf'}; margin-right: 5px; font-weight:bold;">[${tiempoPausa.toFixed(1)}s]</span>
@@ -132,7 +118,6 @@ function dibujarListaInteractiva() {
         `;
         cajaContenedora.appendChild(divFila);
     });
-
     calcularTiempoAhorrado();
 }
 
@@ -164,7 +149,7 @@ function calcularTiempoAhorrado() {
 function convertirSegundos(seg) {
     const m = Math.floor(seg / 60).toString().padStart(2, '0');
     const s = Math.floor(seg % 60).toString().padStart(2, '0');
-    return `${m}:${s}`;
+    return `${m}:${s}`
 }
 
 async function ejecutarRecorteYExportacion() {
@@ -172,11 +157,9 @@ async function ejecutarRecorteYExportacion() {
         alert("No hay análisis listo para procesar el recorte.");
         return;
     }
-
     fragmentosEditados = [];
     let tiempoLinea = 0;
     const maxDuracion = videoNativo.duration;
-
     registrosSilencios.forEach(s => {
         if (s.remover) {
             if (s.inicio > tiempoLinea) {
@@ -186,21 +169,16 @@ async function ejecutarRecorteYExportacion() {
         }
     });
     if (tiempoLinea < maxDuracion) fragmentosEditados.push({ inicio: tiempoLinea, fin: maxDuracion });
-
     alert("El sistema está procesando los fragmentos de video... Espera la confirmación.");
-
     const canvasCorte = document.createElement('canvas');
     const ctxCorte = canvasCorte.getContext('2d');
     canvasCorte.width = videoNativo.videoWidth || 720;
     canvasCorte.height = videoNativo.videoHeight || 1280;
-
     const streamV = canvasCorte.captureStream(30);
     const streamA = videoNativo.captureStream ? videoNativo.captureStream() : videoNativo.mozCaptureStream();
     const streamMuestreo = new MediaStream([...streamV.getVideoTracks(), ...streamA.getAudioTracks()]);
-
     const grabadorVideo = new MediaRecorder(streamMuestreo, { mimeType: 'video/webm;codecs=vp9' });
     let datosVideoFinal = [];
-
     grabadorVideo.ondataavailable = (e) => { if (e.data.size > 0) datosVideoFinal.push(e.data); };
     grabadorVideo.onstop = () => {
         const blobVideo = new Blob(datosVideoFinal, { type: 'video/mp4' });
@@ -212,9 +190,7 @@ async function ejecutarRecorteYExportacion() {
         document.body.removeChild(enlaceDescarga);
         alert("¡Video guardado en la carpeta de descargas!");
     };
-
     grabadorVideo.start();
-
     for (const frag of fragmentosEditados) {
         videoNativo.currentTime = frag.inicio;
         await new Promise(r => videoNativo.onseeked = r);
