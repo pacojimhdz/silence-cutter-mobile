@@ -1,11 +1,15 @@
 {
-  "name": "silence-cutter",
+  "name": "silence-cutter-mobile",
   "version": "1.0.0",
-  "description": "Aplicacion movil para eliminar silencios de videos",
-  "main": "index.html",
-  "keywords": [],
-  "author": "Frank",
-  "license": "ISC",
-  "dependencies": {},
-  "devDependencies": {}
+  "description": "Eliminador de silencios para dispositivos móviles",
+  "main": "index.js",
+  "scripts": {
+    "start": "echo 'Entorno listo'"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/cli": "^6.0.0",
+    "@capacitor/core": "^6.0.0"
+  },
+  "license": "MIT"
 }
