@@ -39,6 +39,13 @@ jobs:
     - name: Agregar plataforma Android nativa
       run: npx cap add android
 
+    - name: Forzar Gradle 8.7 compatible
+      run: |
+        WRAPPER_PROPERTIES="android/gradle/wrapper/gradle-wrapper.properties"
+        if [ -f "$WRAPPER_PROPERTIES" ]; then
+          sed -i 's|distributionUrl=.*|distributionUrl=https\\://services.gradle.org/distributions/gradle-8.7-all.zip|' $WRAPPER_PROPERTIES
+        fi
+
     - name: Sincronizar codigo web con el entorno Android
       run: npx cap sync android
 
