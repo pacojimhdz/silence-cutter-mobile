@@ -1,16 +1,15 @@
 {
-  "name": "silence-cutter-mobile",
+  "name": "silence-cutter",
   "version": "1.0.0",
-  "description": "Eliminador de silencios para dispositivos móviles",
+  "description": "Silence Cutter Mobile",
   "main": "index.js",
-  "scripts": {
-    "start": "echo 'Entorno listo'"
-  },
   "dependencies": {
-    "@capacitor/android": "^6.0.0",
-    "@capacitor/cli": "^6.0.0",
     "@capacitor/core": "^6.0.0",
-    "@capacitor/filesystem": "^6.0.0"
+    "@capacitor/android": "^6.0.0",
+    "@capawesome/capacitor-file-picker": "^6.0.0",
+    "@capacitor-community/ffmpeg": "^6.0.0"
   },
-  "license": "MIT"
+  "devDependencies": {
+    "@capacitor/cli": "^6.0.0"
+  }
 }
