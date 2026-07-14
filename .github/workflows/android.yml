@@ -30,8 +30,10 @@ jobs:
     - name: Instalar dependencias del proyecto
       run: npm install
 
-    - name: Instalar plugin selector de videos
-      run: npm install @capawesome/capacitor-file-picker --legacy-peer-deps
+    - name: Instalar plugin selector de videos y FFmpeg nativo
+      run: |
+        npm install @capawesome/capacitor-file-picker --legacy-peer-deps
+        npm install @capacitor-community/ffmpeg --legacy-peer-deps
 
     - name: Inicializar configuracion de Capacitor
       run: npx cap init "Silence Cutter" "com.bigfrank.silencecutter" --web-dir=www
@@ -49,10 +51,11 @@ jobs:
     - name: Sincronizar codigo web con el entorno Android
       run: npx cap sync android
 
-    - name: Inyectar permisos de lectura de almacenamiento
+    - name: Inyectar permisos de lectura y escritura de almacenamiento
       run: |
         MANIFEST="android/app/src/main/AndroidManifest.xml"
         sed -i '/<application/i \    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" \/>' $MANIFEST
+        sed -i '/<application/i \    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" \/>' $MANIFEST
         sed -i '/<application/i \    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" \/>' $MANIFEST
 
     - name: Compilar APK en modo Debug con Gradle
