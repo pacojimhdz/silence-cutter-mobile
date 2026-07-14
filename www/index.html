@@ -3,190 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>No Silence</title>
+    <title>Silence Cutter</title>
     <style>
-        body {
-            background-color: #0f1015;
-            color: #ffffff;
-            font-family: sans-serif;
-            margin: 0;
-            padding: 15px;
-            box-sizing: border-box;
-        }
-        .header-app {
-            text-align: center;
-            padding: 5px 0 15px 0;
-        }
-        .header-app h1 {
-            margin: 0;
-            font-size: 22px;
-            letter-spacing: 0.5px;
-        }
-        .header-app p {
-            margin: 4px 0 0 0;
-            color: #00e676;
-            font-size: 13px;
-        }
-        .caja-video {
-            width: 100%;
-            background: #000000;
-            border-radius: 12px;
-            overflow: hidden;
-            margin-bottom: 15px;
-            aspect-ratio: 16 / 9;
-        }
-        video {
-            width: 100%;
-            height: 100%;
-            display: block;
-        }
-        .seccion-ondas {
-            background: #161822;
-            border-radius: 10px;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #2a2b3d;
-        }
-        canvas {
-            width: 100%;
-            height: 90px;
-            background: #11121a;
-            border-radius: 6px;
-            display: block;
-        }
-        .barra-estado {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        .titulo-estado {
-            margin: 0;
-            font-size: 16px;
-            font-weight: bold;
-        }
-        .sub-estado {
-            color: #00e676;
-            font-size: 12px;
-            display: block;
-            margin-top: 2px;
-        }
-        .btn-accion {
-            background: #00e676;
-            color: #000000;
-            border: none;
-            padding: 10px 20px;
-            font-weight: bold;
-            border-radius: 20px;
-            font-size: 13px;
-            cursor: pointer;
-        }
-        .lista-silencios {
-            background: #161822;
-            padding: 12px;
-            border-radius: 12px;
-            margin-bottom: 85px;
-            border: 1px solid #2a2b3d;
-        }
-        .lista-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 12px;
-            font-size: 12px;
-            color: #8b8eaf;
-            text-transform: uppercase;
-        }
-        .contenedor-items {
-            max-height: 180px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        .tarjeta-silencio {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #1e2030;
-            padding: 10px;
-            border-radius: 8px;
-            border-left: 4px solid #ff1744;
-        }
-        .info-silencio {
-            font-size: 13px;
-            font-weight: bold;
-            color: #ffffff;
-        }
-        .status-texto {
-            font-size: 11px;
-            color: #ff1744;
-            margin-top: 2px;
-        }
-        .switch-control {
-            position: relative;
-            display: inline-block;
-            width: 42px;
-            height: 22px;
-        }
-        .switch-control input {
-            opacity: 0; width: 0; height: 0;
-        }
-        .deslizador {
-            position: absolute;
-            cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #3d405b;
-            transition: .2s;
-            border-radius: 22px;
-        }
-        .deslizador:before {
-            position: absolute;
-            content: "";
-            height: 16px;
-            width: 16px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .2s;
-            border-radius: 50%;
-        }
-        input:checked + .deslizador {
-            background-color: #00e676;
-        }
-        input:checked + .deslizador:before {
-            transform: translateX(20px);
-            background-color: black;
-        }
-        .btn-flotante-exportar {
-            position: fixed;
-            bottom: 15px;
-            left: 15px;
-            right: 15px;
-            background: #00e676;
-            color: #000000;
-            padding: 15px;
-            font-size: 15px;
-            font-weight: bold;
-            border: none;
-            border-radius: 10px;
-            text-align: center;
-            box-shadow: 0 4px 12px rgba(0,230,118,0.3);
-            cursor: pointer;
-        }
-        .selector-nativo {
-            background: #161822;
-            color: white;
-            border: 1px dashed #4e5175;
-            width: 100%;
-            padding: 14px;
-            border-radius: 8px;
-            text-align: center;
-            margin-bottom: 15px;
-            display: block;
-            box-sizing: border-box;
-            font-size: 14px;
-            font-weight: bold;
-        }
+        body { background-color: #0f1015; color: #ffffff; font-family: sans-serif; margin: 0; padding: 15px; box-sizing: border-box; }
+        .header-app { text-align: center; padding: 5px 0 15px 0; }
+        .header-app h1 { margin: 0; font-size: 22px; letter-spacing: 0.5px; }
+        .header-app p { margin: 4px 0 0 0; color: #00e676; font-size: 13px; }
+        .caja-video { width: 100%; background: #000000; border-radius: 12px; overflow: hidden; margin-bottom: 15px; aspect-ratio: 16 / 9; }
+        video { width: 100%; height: 100%; display: block; }
+        .seccion-ondas { background: #161822; border-radius: 10px; padding: 10px; margin-bottom: 15px; border: 1px solid #2a2b3d; }
+        canvas { width: 100%; height: 90px; background: #11121a; border-radius: 6px; display: block; }
+        .barra-estado { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .titulo-estado { margin: 0; font-size: 16px; font-weight: bold; }
+        .sub-estado { color: #00e676; font-size: 12px; display: block; margin-top: 2px; }
+        .btn-accion { background: #00e676; color: #000000; border: none; padding: 10px 20px; font-weight: bold; border-radius: 20px; font-size: 13px; cursor: pointer; }
+        .lista-silencios { background: #161822; padding: 12px; border-radius: 12px; margin-bottom: 85px; border: 1px solid #2a2b3d; }
+        .lista-header { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 12px; color: #8b8eaf; text-transform: uppercase; }
+        .contenedor-items { max-height: 180px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+        .tarjeta-silencio { display: flex; justify-content: space-between; align-items: center; background: #1e2030; padding: 10px; border-radius: 8px; border-left: 4px solid #ff1744; }
+        .info-silencio { font-size: 13px; font-weight: bold; color: #ffffff; }
+        .status-texto { font-size: 11px; color: #ff1744; margin-top: 2px; }
+        .switch-control { position: relative; display: inline-block; width: 42px; height: 22px; }
+        .switch-control input { opacity: 0; width: 0; height: 0; }
+        .deslizador { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #3d405b; transition: .2s; border-radius: 22px; }
+        .deslizador:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .2s; border-radius: 50%; }
+        input:checked + .deslizador { background-color: #00e676; }
+        input:checked + .deslizador:before { transform: translateX(20px); background-color: black; }
+        .btn-flotante-exportar { position: fixed; bottom: 15px; left: 15px; right: 15px; background: #00e676; color: #000000; padding: 15px; font-size: 15px; font-weight: bold; border: none; border-radius: 10px; text-align: center; box-shadow: 0 4px 12px rgba(0,230,118,0.3); cursor: pointer; }
+        .selector-nativo { background: #161822; color: white; border: 1px dashed #4e5175; width: 100%; padding: 14px; border-radius: 8px; text-align: center; margin-bottom: 15px; display: block; box-sizing: border-box; font-size: 14px; font-weight: bold; }
     </style>
 </head>
 <body>
